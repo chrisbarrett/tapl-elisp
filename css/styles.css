@@ -1,0 +1,106 @@
+#table-of-contents, .outline-2, #footnotes {
+  background-color: #fff;
+  margin-top: 0.7em;
+  padding-bottom: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+#text-table-of-contents a {
+  color: black;
+}
+
+#text-table-of-contents > ul > li {
+  padding-top: 0.5em;
+}
+
+#text-table-of-contents ul {
+  list-style: none;
+}
+
+#text-table-of-contents > ul > li ul {
+  padding-top: 0.5em;
+}
+
+h2 {
+  margin-top: 0.25em;
+  padding-top: 1em;
+  border-bottom: 1px solid #ccc
+}
+
+.section-number-2, .section-number-3 {
+  float: right;
+  color: #e5e5e5;
+}
+
+.answer {
+  font-family: "helvetica neue", "helvetica", "arial", "sans-serif";
+  float: right;
+  color: #ddd;
+  font-size: 0.7em;
+}
+
+.outline-3, #text-footnotes {
+  margin-top: 1.5em;
+  border-left: 1px dashed #ddd;
+  border-right: 1px dashed #ddd;
+  padding-left: 0.7em;
+  padding-right: 0.7em;
+}
+
+a {
+  text-decoration: none;
+}
+
+h1, h2, h3 {
+  font-family: "helvetica neue", "helvetica", "arial", "sans-serif";
+}
+
+.org-ul {
+  padding-left: 1.5em;
+}
+
+dd {
+  padding-bottom: 1em;
+}
+
+.example {
+  border: none;
+  box-shadow: none;
+}
+
+.title {
+  background-color: #fff;
+  padding-bottom: 0.2em;
+  padding-top: 0.2em;
+}
+
+body {
+  background-color: #f4f4f4;
+  font-family: "palatino", "times new roman", "serif";
+  line-height: 1.5em;
+}
+
+@media all and (min-width: 1024px) {
+  p {
+    text-align: justify;
+  }
+
+  #content {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 800px;
+  }
+
+  .section-number-2 {
+    border-bottom: 1px solid #ccc;
+  }
+
+  .section-number-2, .section-number-3 {
+    position: relative;
+    width: 50px;
+    text-align: left;
+    right: -90px;
+  }
+}
