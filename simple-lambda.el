@@ -247,14 +247,21 @@ evaluate to the same type.")))
     (should (equal :unbound-var (plist-get (car errs) :error)))))
 
 
+(ert-deftest simple-lambda-test–-shadowing ()
+  (let ((ctx '((x . Nat)))
+        (program '((λ (x : Bool) x) true)))
+    (should (equal 'Bool (simple-lambda-typecheck ctx program)))))
+
+
 (ert-deftest simple-lambda-test--program ()
   (let ((ctx '((not . (Bool -> Bool))
                (+ . (Nat -> (Nat -> Nat)))
                (identity . (Nat -> Nat))
+               (x . Bool)
                (const . (Nat -> (Nat -> Nat)))))
 
         (program '((λ (x : Nat) ((+ x) 1))
-                   ((if (not true) identity (const 0))
+                   ((if (not x) identity (const 0))
                     1))))
     (should (equal 'Nat (simple-lambda-typecheck ctx program)))))
 
