@@ -9,6 +9,6 @@ Implementations of interpreters and type checkers described in [Types And Progra
 
 ## Type checkers ##
 
-- [Simply-typed lambda calculus](./simple-lambda.el)
+- [Simply-typed lambda calculus](./stlc.el)
 
 [tapl]: https://www.amazon.com/Types-Programming-Languages-MIT-Press/dp/0262162091

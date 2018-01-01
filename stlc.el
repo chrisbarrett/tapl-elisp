@@ -1,4 +1,4 @@
-;;; simple-lambda.el --- Simply-typed lambda calculus  -*- lexical-binding: t; -*-
+;;; stlc.el --- Simply-typed lambda calculus  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -37,15 +37,15 @@
 
 ;; A context is represented as an alist of binding name to type.
 
-(defun simple-lambda-add-binding (ctx name type)
+(defun stlc-add-binding (ctx name type)
   (cons (cons name type) ctx))
 
-(defun simple-lambda-lookup-type (ctx name)
+(defun stlc-lookup-type (ctx name)
   (alist-get name ctx))
 
 ;; Type-checking
 
-(defun simple-lambda-typecheck (ctx term)
+(defun stlc-typecheck (ctx term)
   (let (errors)
     (cl-labels
         ((unify
@@ -131,7 +131,7 @@ evaluate to the same type.")))
             ;;    Γ ⊢ x:T
 
             ((and name (pred symbolp))
-             (or (simple-lambda-lookup-type ctx name)
+             (or (stlc-lookup-type ctx name)
                  (unbound-var-error name)))
 
 
@@ -142,7 +142,7 @@ evaluate to the same type.")))
             ;;    Γ ⊢ (λ (x : T₁) e) : T₁ → T₂
 
             (`(λ (,name : ,ty) ,body)
-             (let* ((ctx (simple-lambda-add-binding ctx name ty))
+             (let* ((ctx (stlc-add-binding ctx name ty))
                     (result-ty (typecheck ctx body)))
                `(,ty -> ,result-ty)))
 
@@ -174,86 +174,86 @@ evaluate to the same type.")))
 
 ;;; Context Tests
 
-(ert-deftest simple-lambda-test--add-binding ()
+(ert-deftest stlc-test--add-binding ()
   (let ((ctx nil))
-    (should-not (simple-lambda-lookup-type ctx 'foo))
-    (setq ctx (simple-lambda-add-binding ctx 'foo 'Bool))
-    (should (equal 'Bool (simple-lambda-lookup-type ctx 'foo)))))
+    (should-not (stlc-lookup-type ctx 'foo))
+    (setq ctx (stlc-add-binding ctx 'foo 'Bool))
+    (should (equal 'Bool (stlc-lookup-type ctx 'foo)))))
 
 
 ;;; Type-checking tests
 
-(ert-deftest simple-lambda-test--boolean-literals ()
-  (should (equal 'Bool (simple-lambda-typecheck nil 'true)))
-  (should (equal 'Bool (simple-lambda-typecheck nil 'false))))
+(ert-deftest stlc-test--boolean-literals ()
+  (should (equal 'Bool (stlc-typecheck nil 'true)))
+  (should (equal 'Bool (stlc-typecheck nil 'false))))
 
-(ert-deftest simple-lambda-test--nat-literals ()
-  (should-not (equal 'Nat (simple-lambda-typecheck nil -1)))
-  (should (equal 'Nat (simple-lambda-typecheck nil 0)))
-  (should (equal 'Nat (simple-lambda-typecheck nil 1))))
+(ert-deftest stlc-test--nat-literals ()
+  (should-not (equal 'Nat (stlc-typecheck nil -1)))
+  (should (equal 'Nat (stlc-typecheck nil 0)))
+  (should (equal 'Nat (stlc-typecheck nil 1))))
 
 
-(ert-deftest simple-lambda-test--if-expression ()
-  (should (equal 'Nat (simple-lambda-typecheck nil '(if true 0 1))))
-  (should (equal 'Bool (simple-lambda-typecheck nil '(if true true false)))))
+(ert-deftest stlc-test--if-expression ()
+  (should (equal 'Nat (stlc-typecheck nil '(if true 0 1))))
+  (should (equal 'Bool (stlc-typecheck nil '(if true true false)))))
 
-(ert-deftest simple-lambda-test--if-expression--not-bool ()
-  (let* ((result (simple-lambda-typecheck nil '(if 0 0 0)))
+(ert-deftest stlc-test--if-expression--not-bool ()
+  (let* ((result (stlc-typecheck nil '(if 0 0 0)))
          (errs (plist-get result :errors)))
     (should (equal 1 (length errs)))
     (should (equal :type-error (plist-get (car errs) :error)))))
 
-(ert-deftest simple-lambda-test--if-expression--different-types ()
-  (let* ((result (simple-lambda-typecheck nil '(if true true 0)))
+(ert-deftest stlc-test--if-expression--different-types ()
+  (let* ((result (stlc-typecheck nil '(if true true 0)))
          (errs (plist-get result :errors)))
     (should (equal 1 (length errs)))
     (should (equal :type-error (plist-get (car errs) :error)))))
 
 
-(ert-deftest simple-lambda-test--var-reference ()
-  (should-not (equal 'Nat (simple-lambda-typecheck nil 'foo)))
-  (should (equal 'Nat (simple-lambda-typecheck '((foo . Nat)) 'foo))))
+(ert-deftest stlc-test--var-reference ()
+  (should-not (equal 'Nat (stlc-typecheck nil 'foo)))
+  (should (equal 'Nat (stlc-typecheck '((foo . Nat)) 'foo))))
 
 
-(ert-deftest simple-lambda-test--lambda ()
-  (should-not (equal '(Nat -> Nat) (simple-lambda-typecheck nil '(λ (foo : Nat) true))))
-  (should (equal '(Nat -> Nat) (simple-lambda-typecheck nil '(λ (foo : Nat) foo)))))
+(ert-deftest stlc-test--lambda ()
+  (should-not (equal '(Nat -> Nat) (stlc-typecheck nil '(λ (foo : Nat) true))))
+  (should (equal '(Nat -> Nat) (stlc-typecheck nil '(λ (foo : Nat) foo)))))
 
 
-(ert-deftest simple-lambda-test--apply ()
-  (should (equal 'Nat (simple-lambda-typecheck nil `((λ (foo : Nat) foo) 0)))))
+(ert-deftest stlc-test--apply ()
+  (should (equal 'Nat (stlc-typecheck nil `((λ (foo : Nat) foo) 0)))))
 
-(ert-deftest simple-lambda-test--apply-from-ctx ()
-  (should (equal 'Nat (simple-lambda-typecheck '((identity . (Nat -> Nat)))
-                                  '(identity 0)))))
+(ert-deftest stlc-test--apply-from-ctx ()
+  (should (equal 'Nat (stlc-typecheck '((identity . (Nat -> Nat)))
+                                      '(identity 0)))))
 
-(ert-deftest simple-lambda-test--apply-type-error ()
-  (let* ((result (simple-lambda-typecheck '((f . (Bool -> Nat)))
-                             '(f 0)))
+(ert-deftest stlc-test--apply-type-error ()
+  (let* ((result (stlc-typecheck '((f . (Bool -> Nat)))
+                                 '(f 0)))
          (errs (plist-get result :errors)))
     (should (equal 1 (length errs)))
     (should (equal :type-error (plist-get (car errs) :error)))))
 
-(ert-deftest simple-lambda-test--apply-nonfunction-error ()
-  (let* ((result (simple-lambda-typecheck nil '(0 0)))
+(ert-deftest stlc-test--apply-nonfunction-error ()
+  (let* ((result (stlc-typecheck nil '(0 0)))
          (errs (plist-get result :errors)))
     (should (equal 1 (length errs)))
     (should (equal :application-type-error (plist-get (car errs) :error)))))
 
-(ert-deftest simple-lambda-test--apply-unbound-function-error ()
-  (let* ((result (simple-lambda-typecheck nil '(identity 0)))
+(ert-deftest stlc-test--apply-unbound-function-error ()
+  (let* ((result (stlc-typecheck nil '(identity 0)))
          (errs (plist-get result :errors)))
     (should (equal 1 (length errs)))
     (should (equal :unbound-var (plist-get (car errs) :error)))))
 
 
-(ert-deftest simple-lambda-test–-shadowing ()
+(ert-deftest stlc-test--shadowing ()
   (let ((ctx '((x . Nat)))
         (program '((λ (x : Bool) x) true)))
-    (should (equal 'Bool (simple-lambda-typecheck ctx program)))))
+    (should (equal 'Bool (stlc-typecheck ctx program)))))
 
 
-(ert-deftest simple-lambda-test--program ()
+(ert-deftest stlc-test--program ()
   (let ((ctx '((not . (Bool -> Bool))
                (+ . (Nat -> (Nat -> Nat)))
                (identity . (Nat -> Nat))
@@ -263,8 +263,8 @@ evaluate to the same type.")))
         (program '((λ (x : Nat) ((+ x) 1))
                    ((if (not x) identity (const 0))
                     1))))
-    (should (equal 'Nat (simple-lambda-typecheck ctx program)))))
+    (should (equal 'Nat (stlc-typecheck ctx program)))))
 
-(provide 'simple-lambda)
+(provide 'stlc)
 
-;;; simple-lambda.el ends here
+;;; stlc.el ends here
