@@ -4,7 +4,7 @@ Implementations of interpreters and type checkers described in [Types And Progra
 
 ## Interpreters ##
 
-- [Lambda calculus](./untyped-lambda.el)
+- [Lambda calculus](./lc.el)
 - [Untyped arithmetic expressions](./untyped-arith.el)
 
 ## Type checkers ##

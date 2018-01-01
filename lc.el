@@ -1,4 +1,4 @@
-;;; untyped-lambda.el --- Untyped lambda calculus  -*- lexical-binding: t; -*-
+;;; lc.el --- Untyped lambda calculus  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -27,7 +27,7 @@
 ;; Sketch:
 ;;
 ;;   let const := (lam "" (lam "" (var 1)))
-;;   let result := (untyped-lambda-eval nil (app (app const "foo") "bar"))
+;;   let result := (lc-eval nil (app (app const "foo") "bar"))
 ;;   result = "foo"
 
 ;;; Code:
@@ -36,14 +36,14 @@
 
 (require 'cl-lib)
 
-(defun untyped-lambda-eval (ctx expr)
+(defun lc-eval (ctx expr)
   (pcase expr
     (`(app ,e1 ,e2)
-     (let ((f (untyped-lambda-eval ctx e1))
-           (x (untyped-lambda-eval ctx e2)))
+     (let ((f (lc-eval ctx e1))
+           (x (lc-eval ctx e2)))
        (pcase f
          (`(lam ,s ,body)
-          (untyped-lambda-eval (cons s ctx) (untyped-lambda-subst x body)))
+          (lc-eval (cons s ctx) (lc-subst x body)))
          (_
           (error "Attempt to apply non-function")))))
     (`(var ,n)
@@ -51,7 +51,7 @@
     (x x)))
 
 
-(defun untyped-lambda-mapvar (f expr)
+(defun lc-mapvar (f expr)
   "Map over EXPR, applying F to each var in the expression.
 
 F is a binary function taking a var and the current lambda binder
@@ -72,10 +72,10 @@ depth."
 
     (walk 0 expr)))
 
-(defun untyped-lambda-subst (new-expr old-expr)
+(defun lc-subst (new-expr old-expr)
   (cl-labels
       ((shift (delta expr)
-              (untyped-lambda-mapvar (lambda (var depth)
+              (lc-mapvar (lambda (var depth)
                          (pcase-let ((`(var ,idx) var))
                            (if (>= idx depth)
                                `(var ,(+ delta idx))
@@ -83,7 +83,7 @@ depth."
                        expr))
 
        (subst (var-num new-expr)
-              (untyped-lambda-mapvar (lambda (var depth)
+              (lc-mapvar (lambda (var depth)
                          (pcase-let ((`(var ,idx) var))
                            (if (= idx (+ var-num depth))
                                (shift depth new-expr)
@@ -95,20 +95,20 @@ depth."
 
 ;; Tests
 
-(ert-deftest untyped-lambda--test-lambda-is-normal-form ()
+(ert-deftest lc--test-lambda-is-normal-form ()
   (let ((lam '(lam "x" (var 0))))
-    (should (equal lam (untyped-lambda-eval nil lam)))))
+    (should (equal lam (lc-eval nil lam)))))
 
-(ert-deftest untyped-lambda--test-identity ()
+(ert-deftest lc--test-identity ()
   (let ((id '(lam "x" (var 0))))
-    (should (equal id (untyped-lambda-eval nil `(app ,id ,id))))))
+    (should (equal id (lc-eval nil `(app ,id ,id))))))
 
-(ert-deftest untyped-lambda--test-const ()
+(ert-deftest lc--test-const ()
   (let ((const `(lam "x" (lam "y" (var 1)))))
     (should (equal "foo"
-                   (untyped-lambda-eval nil `(app (app ,const "foo") "bar"))))))
+                   (lc-eval nil `(app (app ,const "foo") "bar"))))))
 
 
-(provide 'untyped-lambda)
+(provide 'lc)
 
-;;; untyped-lambda.el ends here
+;;; lc.el ends here
