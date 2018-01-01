@@ -95,15 +95,15 @@ depth."
 
 ;; Tests
 
-(ert-deftest lc--test-lambda-is-normal-form ()
+(ert-deftest lc-test--lambda-is-normal-form ()
   (let ((lam '(lam "x" (var 0))))
     (should (equal lam (lc-eval nil lam)))))
 
-(ert-deftest lc--test-identity ()
+(ert-deftest lc-test--identity ()
   (let ((id '(lam "x" (var 0))))
     (should (equal id (lc-eval nil `(app ,id ,id))))))
 
-(ert-deftest lc--test-const ()
+(ert-deftest lc-test--const ()
   (let ((const `(lam "x" (lam "y" (var 1)))))
     (should (equal "foo"
                    (lc-eval nil `(app (app ,const "foo") "bar"))))))
