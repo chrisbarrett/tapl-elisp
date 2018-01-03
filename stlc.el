@@ -45,14 +45,17 @@
 
 ;; Type-checking
 
+(defun stlc-unifies-p (t1 t2)
+  (or (equal t1 t2)
+      (equal t1 'diverge)
+      (equal t2 'diverge)))
+
 (defun stlc-typecheck (ctx term)
   (let (errors)
     (cl-labels
         ((unify
           (expected actual &optional message)
-          (if (or (equal expected actual)
-                  (equal expected 'diverge)
-                  (equal actual 'diverge))
+          (if (stlc-unifies-p expected actual)
               expected
             (let ((err (list :error :type-error
                              :message (or message (format "Type error: Expected \
